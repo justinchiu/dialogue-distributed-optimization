@@ -13,9 +13,9 @@
 \usepackage{latexsym}
 
 % New packages
+\usepackage{mystyle}
 \usepackage{lipsum}
 \usepackage{booktabs}
-\usepackage{mystyle}
 \usepackage{multirow}
 %\usepackage{fontawesome}
 \usepackage{amssymb}
@@ -157,8 +157,10 @@ TBD
 \section{Problem setup}
 The goal is to optimize a linear optimization problem
 \begin{equation}
-\maximize \langle w, x\rangle
-\subjectto x \in F.
+\begin{array}{ll}
+\mbox{maximize} & \langle w, x\rangle\\
+\mbox{subject to} & x \in F.
+\end{array}
 \end{equation}
 
 
