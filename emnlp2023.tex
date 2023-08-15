@@ -5,8 +5,8 @@
 \documentclass[11pt]{article}
 
 % Remove the "review" option to generate the final version.
-%\usepackage[review]{EMNLP2023}
-\usepackage{EMNLP2023}
+\usepackage[review]{EMNLP2023}
+%\usepackage{EMNLP2023}
 
 % Standard package includes
 \usepackage{times}
@@ -23,7 +23,6 @@
 
 \usepackage{courier}
 
-%\newcommand{\system}{ShrdLoc \faSearch}
 \newcommand{\system}{SPC}
 
 % For proper rendering and hyphenation of words containing Latin characters (including in bib files)
@@ -106,7 +105,7 @@
 
 \title{
 Symbolic Planning and Codegen\\
-for Dialogue-Distributed Optimization
+for Decentralized Optimization through Dialogue
 }
 
 % Author information can be set in various styles:
@@ -154,15 +153,87 @@ Cornell Tech \\
 TBD
 \end{abstract}
 
+\section{Introduction}
+Our goal is to design robots that collaborate with humans to solve complex problems.
+Humans often know the problem specification, but may have difficulty solving the problem itself.
+Describing the problem in its entirety is expensive, requiring humans many words to convey.
+Additionally, many parameters in the problem are extraneous (for example, only the max or top 5 elements of a list may be important).
+
+Our goal is to minimize communication costs by iteratively requesting information, updating our beliefs, and repeating until a satisfactory solution is reached.
+One approach is Bayesian optimization, which learns to maximize an unknown objective function,
+e.g. $f(x) = \innerprod c x$, in as few evaluations of $f$ as possible.
+A key assumption in Bayesian optimization is that $f$ is a black box with unknown structure.
+Grey-box Bayesian optimization methods relax this assumption, improving sample complexity by taking advantage of structure in the optimization problem \citep{grey-box-bayesopt}.
+Two examples of this are when the objective consists of composite functions \citep{astudillo2019bayesian} and multi-fidelity Bayesian optimization \citep{poloczek2016multiinformation,Zanjani_Foumani_2023}. (move to related work)
+
+We extend grey-box Bayesian optimization by considering a new setting:
+Agents can gather information about problem substructure directly, without assuming compositional structure.
+
+We then extend grey-box Bayesian optimization to the dialogue setting by proposing a query language through which agents can request and receive information about the unknown optimization problem.
+The query language is designed to be described concisely in natural language.
+
+We propose a method, Language to Symbolic Optimization (LaSO) that collaborates with humans by requests information incrementally, decreasing human communication costs.
+LaSO parses natural language responses to logical forms, which are used to inform a symbolic optimization algorithm that plans what to say next.
+
+We evaluate LaSO on DialOp, a set of 3 decision-oriented dialogue tasks \citep{lin2023decision}.
+
 \section{Problem setup}
-The goal is to optimize a linear optimization problem
+The goal of decision-oriented dialogue (DOD) is to solve an optimization problem, such as
 \begin{equation}
+\label{eqn:obj}
 \begin{array}{ll}
-\mbox{maximize} & \langle w, x\rangle\\
+\mbox{maximize} & \innerprod{w}{x}\\
 \mbox{subject to} & x \in F.
 \end{array}
 \end{equation}
+Solving this problem is straightforward when both $w$ and $F$ are known,
+and the problem size (dimension $\dim(w)$ and number of constraints $|F|$) is not too large.
 
+We consider the setting where the parameters $c$, constraints $F$, and decision variables $x$ of the optimization problem are partitioned between dialogue participants, requiring them to exchange information (about $c$ and $F$) and make decisions  ($x$) collaboratively.
+We take the perspective of one dialogue participant, who must communicate with other participants to solve the problem.
+
+\section{Planning}
+We first focus on the setting where the parameters $w\in\R^n$ are unknown, ignoring constraints $F$.
+Our goal is to choose the most informative and utility-aware action at every turn in order to select a good terminal $x\in\mcX = \set{0,1}^n$.
+
+We assume a fully factored prior over $w$, $p(w) = \prod_i p(w_i)$ with $w_i\sim N(0,1)$.
+
+The partner model, $p(y | a,w)$, models responses $y$ to actions $a$ given parameters $w$.
+The action space is extended to $a \in \mcX \cup \mathcal{Q}$, the union of the decision space and query space.
+Responses are yes/no.
+
+We plan by computing the knowledge gradient acquisition function \citep{kg}.
+The knowledge gradient is an acquisition function with one-step lookahead.
+It chooses the next action that gathers information which results in the largest improvement of a subsequent decision.
+The subsequent decision is not restricted to previously observed values,
+which is especially important in our setting where actions may not be in the decision space $\mcX$.
+Formally, the knowledge gradient acquisition function is given by the following:
+\begin{equation}
+\label{eqn:kg}
+\argmax_a \Es{w}{\sum_y p(y|a,w) \max_x \mu_{w|a,y}(x)}
+- \max_{x'} \mu_w(x'),
+\end{equation}
+where $\mu_w(x) = \Es{w}{\langle w,x \rangle}$, the mean reward.
+(INCOMPLETE: how to factor in costs?)
+
+The acquisition function in equation \ref{eqn:kg} has an argmax over actions $a \in \mcX \cup \mathcal{Q}$.
+In the worst case this means that we must solve the inner problem
+$\max_x \mu_{w|a,y}(x)$ for each action $a$ and response $y$,
+which requires calling a solver each time.
+How to prevent computational blowup?
+
+\section{Query language}
+
+
+\bibliography{anthology,custom}
+\bibliographystyle{acl_natbib}
+\appendix
+
+\section{EHIG}
+Recent work has presented a unified perspective on BOpt to decision-theoretic entropies, proposing a framework that allows for the principled derivation of acquisition functions for custom tasks \citep{neiswanger2022generalizing}.
+This is referred to as the expected $H_{l,A}$-information gain (EHIG),
+where $H_{l,A}$ is a utility $l$ and action $A$ aware generalization of the Shannon entropy.
+While this allows for unifying entropy search and BOpt, not sure if we can do anything with it yet.
 
 \end{document}
 
