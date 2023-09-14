@@ -5,8 +5,8 @@
 \documentclass[11pt]{article}
 
 % Remove the "review" option to generate the final version.
-\usepackage[review]{EMNLP2023}
-%\usepackage{EMNLP2023}
+%\usepackage[review]{EMNLP2023}
+\usepackage{EMNLP2023}
 
 % Standard package includes
 \usepackage{times}
@@ -104,8 +104,8 @@
 % and set <dim> to something 5cm or larger.
 
 \title{
-Symbolic Planning and Codegen\\
-for Decentralized Optimization through Dialogue
+Reasoning about Information in Dialogue:\\
+Collaborative Decentralized Optimization
 }
 
 % Author information can be set in various styles:
@@ -157,14 +157,18 @@ TBD
 Our goal is to design robots that collaborate with humans to solve complex problems.
 Humans often know the problem specification, but may have difficulty solving the problem itself.
 Describing the problem in its entirety is expensive, requiring humans many words to convey.
-Additionally, many parameters in the problem are extraneous (for example, only the max or top 5 elements of a list may be important).
+Additionally, many parameters in the problem are extraneous (for example, only the max or top-$k$ elements of a list may be important).
 
-Our goal is to minimize communication costs by iteratively requesting information, updating our beliefs, and repeating until a satisfactory solution is reached.
+Minimizing communication costs is of utmost importance.
+Human processing costs are 
+Titeratively requesting information, updating our beliefs, and repeating until a satisfactory solution is reached.
 One approach is Bayesian optimization, which learns to maximize an unknown objective function,
 e.g. $f(x) = \innerprod c x$, in as few evaluations of $f$ as possible.
 A key assumption in Bayesian optimization is that $f$ is a black box with unknown structure.
 Grey-box Bayesian optimization methods relax this assumption, improving sample complexity by taking advantage of structure in the optimization problem \citep{grey-box-bayesopt}.
-Two examples of this are when the objective consists of composite functions \citep{astudillo2019bayesian} and multi-fidelity Bayesian optimization \citep{poloczek2016multiinformation,Zanjani_Foumani_2023}. (move to related work)
+
+Two examples of this are when the objective consists of composite functions \citep{astudillo2019bayesian} and multi-fidelity Bayesian optimization \citep{poloczek2016multiinformation,Zanjani_Foumani_2023}. 
+Preferential Bayesian optimization \citep{astudillo2023qeubo}. (move to related work)
 
 We extend grey-box Bayesian optimization by considering a new setting:
 Agents can gather information about problem substructure directly, without assuming compositional structure.
@@ -172,37 +176,39 @@ Agents can gather information about problem substructure directly, without assum
 We then extend grey-box Bayesian optimization to the dialogue setting by proposing a query language through which agents can request and receive information about the unknown optimization problem.
 The query language is designed to be described concisely in natural language.
 
-We propose a method, Language to Symbolic Optimization (LaSO) that collaborates with humans by requests information incrementally, decreasing human communication costs.
-LaSO parses natural language responses to logical forms, which are used to inform a symbolic optimization algorithm that plans what to say next.
+We propose a method, Language to Symbolic Optimization (LSO) that collaborates with humans by requests information incrementally, decreasing human communication costs.
+LSO parses natural language responses to logical forms, which are used to inform a symbolic optimization algorithm that plans what to say next.
 
-We evaluate LaSO on DialOp, a set of 3 decision-oriented dialogue tasks \citep{lin2023decision}.
+We evaluate LSO on DialOp, a set of 3 decision-oriented dialogue tasks \citep{lin2023decision}.
 
-\section{Problem setup}
+\section{Related work}
+
+\section{Decision-oriented dialogue}
 The goal of decision-oriented dialogue (DOD) is to solve an optimization problem, such as
 \begin{equation}
 \label{eqn:obj}
 \begin{array}{ll}
 \mbox{maximize} & \innerprod{w}{x}\\
-\mbox{subject to} & x \in F.
+\mbox{subject to} & x \in C.
 \end{array}
 \end{equation}
-Solving this problem is straightforward when both $w$ and $F$ are known,
-and the problem size (dimension $\dim(w)$ and number of constraints $|F|$) is not too large.
+Solving this problem is straightforward when both $w$ and $C$ are known,
+and the problem size (dimension $\dim(w)$ and number of constraints $|C|$) is not too large.
 
-We consider the setting where the parameters $c$, constraints $F$, and decision variables $x$ of the optimization problem are partitioned between dialogue participants, requiring them to exchange information (about $c$ and $F$) and make decisions  ($x$) collaboratively.
+We consider the setting where the parameters $w$, constraints $C$, and decision variables $x$ of the optimization problem are partitioned between dialogue participants, requiring them to exchange information (about $w$ and $F$)\footnote{Preference or reward learning is the setting where $w$ is unknown. Constraint acquisition is where $C$ is unknown.} and make decisions  ($x$) collaboratively.
 We take the perspective of one dialogue participant, who must communicate with other participants to solve the problem.
 
+Describe prior and observation model.
+We assume a fully factored prior over $w$, $p(w) = \prod_i p(w_i)$ with $w_i\sim N(\mu_0,1)$.
+The response model, $p(y | a,w)$, models responses $y$ to actions $a$ given parameters $w$.
+The action space is extended to $a \in \mcX \cup \mathcal{Q}$, the union of the decision space and query space.
+Responses are yes/no or categorical.
+
 \section{Planning}
-We first focus on the setting where the parameters $w\in\R^n$ are unknown, ignoring constraints $F$.
+We first focus on the setting where the parameters $w\in\R^n$ are unknown, ignoring constraints $C$.
 Our goal is to choose the most informative and utility-aware action at every turn in order to select a good terminal $x\in\mcX = \set{0,1}^n$.
 
-We assume a fully factored prior over $w$, $p(w) = \prod_i p(w_i)$ with $w_i\sim N(0,1)$.
-
-The partner model, $p(y | a,w)$, models responses $y$ to actions $a$ given parameters $w$.
-The action space is extended to $a \in \mcX \cup \mathcal{Q}$, the union of the decision space and query space.
-Responses are yes/no.
-
-We plan by computing the knowledge gradient acquisition function \citep{kg}.
+We plan by optimizing the knowledge gradient acquisition function \citep{kg}.
 The knowledge gradient is an acquisition function with one-step lookahead.
 It chooses the next action that gathers information which results in the largest improvement of a subsequent decision.
 The subsequent decision is not restricted to previously observed values,
@@ -210,24 +216,59 @@ which is especially important in our setting where actions may not be in the dec
 Formally, the knowledge gradient acquisition function is given by the following:
 \begin{equation}
 \label{eqn:kg}
-\argmax_a \Es{w}{\sum_y p(y|a,w) \max_x \mu_{w|a,y}(x)}
-- \max_{x'} \mu_w(x'),
+\begin{aligned}
+\argmax_a \; & \Es{y|h,a}{\max_x \mu_{w|h,a,y}(x)}\\
+&- \max_{x} \mu_{w|h}(x),
+\end{aligned}
 \end{equation}
 where $\mu_w(x) = \Es{w}{\langle w,x \rangle}$, the mean reward.
-(INCOMPLETE: how to factor in costs?)
+Costs: subtract (textbook) or divide (cost-aware multi-fidelity BO)?
 
 The acquisition function in equation \ref{eqn:kg} has an argmax over actions $a \in \mcX \cup \mathcal{Q}$.
 In the worst case this means that we must solve the inner problem
 $\max_x \mu_{w|a,y}(x)$ for each action $a$ and response $y$,
 which requires calling a solver each time.
 How to prevent computational blowup?
+Common to sample $y$, but that isn't enough.
+$x$ is also discrete. Is this easy in weighted linear sum assignment problems?
 
 \section{Query language}
+This section discusses the query language $\mathcal{Q}$ and observation model.
+Bradley-Terry and Plackett-Luce for pairwise and ranking comparisons respectively.
 
+\begin{equation}
+p(x \succ y | w)= \frac{e^{w_x}}{e^{w_x} + e^{w_y}}
+\end{equation}
+
+\section{8/20: Questions for Xinran}
+\begin{enumerate}
+    \item Is there a way to not call the solver $|a|*|y|$ times? Some problem-dependent linear optimization trick?
+    \item Is there a principled way of assigning cost to actions? Learned from static data, since we can estimate the utility of any given action? Can be a very primitive kind of learning, e.g. linear function of size($a$).
+\end{enumerate}
+
+% good baseline: normal BO w/ $a \in \mcX$
+% not much cost learnign in BO. cost-aware multi-fidelity. cost model is simple from empirical study. typically rough empirical cost model would work
+% we have offline data! 
+% can we estimate how important cost is?
+
+are there other acquisition functions that are 1-step lookahead but aren't intractable like KG?
+can still do EI w/ 1-step lookahead. (pointers to lit would be helpful!)
+lit: http://proceedings.mlr.press/v124/lee20a/lee20a.pdf
 
 \bibliography{anthology,custom}
 \bibliographystyle{acl_natbib}
 \appendix
+
+\section{Posterior inference}
+In this section we derive the posteriors for the Matching problem.
+Let $y_i = \langle w, x_i\rangle$, with
+$$p(y_i|w,x) = N\left(\langle w,x_i\rangle, \sqrt{w^\top \text{diag}(x_i)w}\right).$$
+Given a prior $p(w) = N(\mu_0, \sigma_0 I)$, and a set of observations $\set{y_i}$, we can compute the posterior
+\begin{align*}12
+p(w | y, x) &\propto \prod_i p(y_i | w,x) p(w)\\
+&= \frac{1}{\sigma I} e^{-1/2(y-\mu)^\top \Sigma^{-1}(y-\mu)}
+    \frac{1}{\sigma_0I} e^{-1/2 (w-)}
+\end{align*}
 
 \section{EHIG}
 Recent work has presented a unified perspective on BOpt to decision-theoretic entropies, proposing a framework that allows for the principled derivation of acquisition functions for custom tasks \citep{neiswanger2022generalizing}.
