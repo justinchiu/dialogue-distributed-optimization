@@ -105,7 +105,7 @@
 
 \title{
 Reasoning about Information in Dialogue:\\
-Collaborative Decentralized Optimization
+Symbolic Optimization and Parsing
 }
 
 % Author information can be set in various styles:
@@ -150,14 +150,23 @@ Cornell Tech \\
 \maketitle
 
 \begin{abstract}
-TBD
+Collaborative dialogue agents must balance communicative efficiency with task process for effective collaboration.
+We design a system that strategically asks questions while minimizing communication costs via symbolic planning.
+Our system consists of a reader, planner, and writer:
+The reader maps language to logical forms
+which inform the symbolic planner's next decision,
+represented as a logical form.
+The writer then converts the logical form to a response,
+taking into account any information not captured by the reader.
+
 \end{abstract}
 
 \section{Introduction}
+
 Our goal is to design robots that collaborate with humans to solve complex problems.
 Humans often know the problem specification, but may have difficulty solving the problem itself.
 Describing the problem in its entirety is expensive, requiring humans many words to convey.
-Additionally, many parameters in the problem are extraneous (for example, only the max or top-$k$ elements of a list may be important).
+The marginal improvement from full information may not be worth the communicative cost.
 
 Minimizing communication costs is of utmost importance.
 Human processing costs are 
@@ -240,7 +249,7 @@ Bradley-Terry and Plackett-Luce for pairwise and ranking comparisons respectivel
 p(x \succ y | w)= \frac{e^{w_x}}{e^{w_x} + e^{w_y}}
 \end{equation}
 
-\section{8/20: Questions for Xinran}
+\section{Questions}
 \begin{enumerate}
     \item Is there a way to not call the solver $|a|*|y|$ times? Some problem-dependent linear optimization trick?
     \item Is there a principled way of assigning cost to actions? Learned from static data, since we can estimate the utility of any given action? Can be a very primitive kind of learning, e.g. linear function of size($a$).
@@ -259,22 +268,13 @@ lit: http://proceedings.mlr.press/v124/lee20a/lee20a.pdf
 \bibliographystyle{acl_natbib}
 \appendix
 
-\section{Posterior inference}
-In this section we derive the posteriors for the Matching problem.
-Let $y_i = \langle w, x_i\rangle$, with
-$$p(y_i|w,x) = N\left(\langle w,x_i\rangle, \sqrt{w^\top \text{diag}(x_i)w}\right).$$
-Given a prior $p(w) = N(\mu_0, \sigma_0 I)$, and a set of observations $\set{y_i}$, we can compute the posterior
-\begin{align*}12
-p(w | y, x) &\propto \prod_i p(y_i | w,x) p(w)\\
-&= \frac{1}{\sigma I} e^{-1/2(y-\mu)^\top \Sigma^{-1}(y-\mu)}
-    \frac{1}{\sigma_0I} e^{-1/2 (w-)}
-\end{align*}
-
 \section{EHIG}
 Recent work has presented a unified perspective on BOpt to decision-theoretic entropies, proposing a framework that allows for the principled derivation of acquisition functions for custom tasks \citep{neiswanger2022generalizing}.
 This is referred to as the expected $H_{l,A}$-information gain (EHIG),
 where $H_{l,A}$ is a utility $l$ and action $A$ aware generalization of the Shannon entropy.
 While this allows for unifying entropy search and BOpt, not sure if we can do anything with it yet.
+
+
 
 \end{document}
 
