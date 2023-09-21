@@ -1,153 +1,116 @@
-% This must be in the first 5 lines to tell arXiv to use pdfLaTeX, which is strongly recommended.
-\pdfoutput=1
-% In particular, the hyperref package requires pdfLaTeX in order to break URLs across lines.
+%%%%%%%% ICML 2023 EXAMPLE LATEX SUBMISSION FILE %%%%%%%%%%%%%%%%%
 
-\documentclass[11pt]{article}
+\documentclass{article}
 
-% Remove the "review" option to generate the final version.
-%\usepackage[review]{EMNLP2023}
-\usepackage{EMNLP2023}
-
-% Standard package includes
-\usepackage{times}
-\usepackage{latexsym}
-
-% New packages
-\usepackage{mystyle}
-\usepackage{lipsum}
-\usepackage{booktabs}
-\usepackage{multirow}
-%\usepackage{fontawesome}
-\usepackage{amssymb}
-\usepackage{listings}
-
-\usepackage{courier}
-
-\newcommand{\system}{SPC}
-
-% For proper rendering and hyphenation of words containing Latin characters (including in bib files)
-\usepackage[T1]{fontenc}
-% For Vietnamese characters
-% \usepackage[T5]{fontenc}
-% See https://www.latex-project.org/help/documentation/encguide.pdf for other character sets
-
-% This assumes your files are encoded as UTF8
-\usepackage[utf8]{inputenc}
-
-% This is not strictly necessary, and may be commented out.
-% However, it will improve the layout of the manuscript,
-% and will typically save some space.
+% Recommended, but optional, packages for figures and better typesetting:
 \usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{booktabs} % for professional tables
 
-% This is also not strictly necessary, and may be commented out.
-% However, it will improve the aesthetics of text in
-% the typewriter font.
-\usepackage{inconsolata}
-
-\usepackage{tabu}
-\newsavebox{\DialogueBox}
-
-\newenvironment{Dialogue}[1][\small]{
-    #1
-    \def\arraystretch{1.3}
-    \setlength\tabcolsep{7pt}
-    \taburulecolor{lightgray}
-    \vspace{.8em}
-    \noindent
-    \begin{tabu} to \columnwidth {|[2pt]lX}
-}{
-    \end{tabu}
-    \vspace{.5em}
-}
-
-\newcommand{\Partner}[1]{Partner: & \UserUtt{#1} \\}
-\newcommand{\AgentDo}[1]{
-\\[-1.3em]
-\multicolumn{2}{|[2pt]p{\linewidth}}{ 
-\AgentAction{#1}
-}
-\\[.3em]
-}
-\newcommand{\AgentSay}[1]{Agent: & \AgentUtt{#1} \\}
-\newcommand{\UserUtt}[1]{\textit{#1}}
-\newcommand{\AgentUtt}[1]{\textit{#1}}
-\newcommand{\AgentAction}[1]{\texttt{\small #1}}
-\newcommand{\MetaAction}[1]{\texttt{\small \underline{#1}}}
-\newcommand{\Exec}{\MetaAction{\textcolor{red}{We don't use eval anymore!}}\xspace}
-\newcommand{\Salient}{\MetaAction{refer}\xspace}
-\newcommand{\Revise}{\MetaAction{revise}\xspace}
-\newcommand{\ReviseConstraint}{\MetaAction{reviseConstraint}\xspace}
-\newcommand{\Describe}{\MetaAction{describe}\xspace}
-\newcommand{\scExec}{\texttt{\scriptsize\underline{eval}}\xspace}
-\newcommand{\scSalient}{\texttt{\scriptsize\underline{refer}}\xspace}
-\newcommand{\scRevise}{\texttt{\scriptsize\underline{revise}}\xspace}
-\newcommand{\Recover}{\MetaAction{recover}\xspace}
-\newcommand{\Root}{\textit{root}}
-\newcommand{\OurDataset}{SMCalFlow\xspace}
+% hyperref makes hyperlinks in the resulting PDF.
+% If your build breaks (sometimes temporarily if a hyperlink spans a page)
+% please comment out the following usepackage line and replace
+% \usepackage{icml2023} with \usepackage[nohyperref]{icml2023} above.
+\usepackage{hyperref}
 
 
-\newcommand{\justin}[1]{{{\textcolor{purple}{(Justin: #1)}}}}
-\newcommand{\derek}[1]{{{\textcolor{blue}{(Derek: #1)}}}}
-\newcommand{\wenting}[1]{{{\textcolor{orange}{(Wenting: #1)}}}}
-\newcommand{\daniel}[1]{{{\textcolor{brown}{(Daniel: #1)}}}}
-\newcommand{\srush}[1]{{{\textcolor{green}{(Sasha: #1)}}}}
-\newcommand{\celine}[1]{{{\textcolor{blue}{(Celine: #1)}}}}
+% Attempt to make hyperref and algorithmic work together better:
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
 
-\AtBeginDocument{\def\sectionautorefname{Section}}%
-\AtBeginDocument{\def\subsectionautorefname{Section}}%
+% Use the following line for the initial blind version submitted for review:
+%\usepackage{icml2023}
+
+% If accepted, instead use the following line for the camera-ready submission:
+\usepackage[accepted]{icml2023}
+
+% For theorems and such
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+
+% justin's macros
+\usepackage{mystyle}
+
+% if you use cleveref..
+\usepackage[capitalize,noabbrev]{cleveref}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THEOREMS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% Todonotes is useful during development; simply uncomment the next line
+%    and comment out the line below the next line to turn off comments
+%\usepackage[disable,textsize=tiny]{todonotes}
+\usepackage[textsize=tiny]{todonotes}
 
 
-% If the title and author information does not fit in the area allocated, uncomment the following
-%
-%\setlength\titlebox{<dim>}
-%
-% and set <dim> to something 5cm or larger.
-
-\title{
-Reasoning about Information in Dialogue:\\
-Symbolic Optimization and Parsing
-}
-
-% Author information can be set in various styles:
-% For several authors from the same institution:
-% \author{Author 1 \and ... \and Author n \\
-%         Address line \\ ... \\ Address line}
-% if the names do not fit well on one line use
-%         Author 1 \\ {\bf Author 2} \\ ... \\ {\bf Author n} \\
-% For authors from different institutions:
-% \author{Author 1 \\ Address line \\  ... \\ Address line
-%         \And  ... \And
-%         Author n \\ Address line \\ ... \\ Address line}
-% To start a seperate ``row'' of authors use \AND, as in
-% \author{Author 1 \\ Address line \\  ... \\ Address line
-%         \AND
-%         Author 2 \\ Address line \\ ... \\ Address line \And
-%         Author 3 \\ Address line \\ ... \\ Address line}
-
-\author{
-Justin T. Chiu  \\
-Cornell Tech \\
-\texttt{jtc257@cornell.edu}
-\And
-Wenting Zhao \\
-Cornell University \\
-\texttt{wz346@cornell.edu}
-\And
-Derek Chen \\
-Columbia University \\
-\texttt{dc3761@columbia.edu}
-\AND
-Saujas Vaduguru \\
-Carnegie Mellon University \\
-\texttt{svadugur@andrew.cmu.edu}
-\And
-Alexander M. Rush \\
-Cornell Tech \\
-\texttt{arush@cornell.edu}
-}
+% The \icmltitle you define below is probably too long as a header.
+% Therefore, a short form for the running title is supplied here:
+\icmltitlerunning{Submission and Formatting Instructions for ICML 2023}
 
 \begin{document}
-\maketitle
+
+\twocolumn[
+\icmltitle{Submission and Formatting Instructions for \\
+           International Conference on Machine Learning (ICML 2023)}
+
+% It is OKAY to include author information, even for blind
+% submissions: the style file will automatically remove it for you
+% unless you've provided the [accepted] option to the icml2023
+% package.
+
+% List of affiliations: The first argument should be a (short)
+% identifier you will use later to specify author affiliations
+% Academic affiliations should list Department, University, City, Region, Country
+% Industry affiliations should list Company, City, Region, Country
+
+% You can specify symbols, otherwise they are numbered in order.
+% Ideally, you should not use this facility. Affiliations will be numbered
+% in order of appearance and this is the preferred way.
+\icmlsetsymbol{equal}{*}
+
+\begin{icmlauthorlist}
+\icmlauthor{Justin T. Chiu}{ct}
+\icmlauthor{Wenting Zhao}{ct}
+\icmlauthor{Derek Chen}{cu}
+\icmlauthor{Alexander M. Rush}{ct}
+\end{icmlauthorlist}
+
+\icmlaffiliation{ct}{Cornell Tech}
+\icmlaffiliation{cu}{Columbia University}
+
+\icmlcorrespondingauthor{Justin T. Chiu}{chiu.justin.t@gmail.com}
+
+% You may provide any keywords that you
+% find helpful for describing your paper; these are used to populate
+% the "keywords" metadata in the PDF but will not be shown in the document
+\icmlkeywords{Machine Learning, ICML}
+
+\vskip 0.3in
+]
+
+% this must go after the closing bracket ] following \twocolumn[ ...
+
+% This command actually creates the footnote in the first column
+% listing the affiliations and the copyright notice.
+% The command takes one argument, which is text to display at the start of the footnote.
+% The \icmlEqualContribution command is standard text for equal contribution.
+% Remove it (just {}) if you do not need this facility.
+
+\printAffiliationsAndNotice{}  % leave blank if no need to mention equal contribution
+%\printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
 
 \begin{abstract}
 Collaborative dialogue agents must balance communicative efficiency with task process for effective collaboration.
@@ -158,7 +121,7 @@ which inform the symbolic planner's next decision,
 represented as a logical form.
 The writer then converts the logical form to a response,
 taking into account any information not captured by the reader.
-
+Results on DialOp, negotiation in Deal-or-no-Deal.
 \end{abstract}
 
 \section{Introduction}
@@ -264,9 +227,24 @@ are there other acquisition functions that are 1-step lookahead but aren't intra
 can still do EI w/ 1-step lookahead. (pointers to lit would be helpful!)
 lit: http://proceedings.mlr.press/v124/lee20a/lee20a.pdf
 
-\bibliography{anthology,custom}
-\bibliographystyle{acl_natbib}
+
+\bibliography{soap}
+\bibliographystyle{icml2023}
+
+
+% Acknowledgements should only appear in the accepted version.
+\section*{Acknowledgements}
+People
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% APPENDIX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 \appendix
+\onecolumn
 
 \section{EHIG}
 Recent work has presented a unified perspective on BOpt to decision-theoretic entropies, proposing a framework that allows for the principled derivation of acquisition functions for custom tasks \citep{neiswanger2022generalizing}.
@@ -275,6 +253,19 @@ where $H_{l,A}$ is a utility $l$ and action $A$ aware generalization of the Shan
 While this allows for unifying entropy search and BOpt, not sure if we can do anything with it yet.
 
 
-
 \end{document}
 
+
+% This document was modified from the file originally made available by
+% Pat Langley and Andrea Danyluk for ICML-2K. This version was created
+% by Iain Murray in 2018, and modified by Alexandre Bouchard in
+% 2019 and 2021 and by Csaba Szepesvari, Gang Niu and Sivan Sabato in 2022.
+% Modified again in 2023 by Sivan Sabato and Jonathan Scarlett.
+% Previous contributors include Dan Roy, Lise Getoor and Tobias
+% Scheffer, which was slightly modified from the 2010 version by
+% Thorsten Joachims & Johannes Fuernkranz, slightly modified from the
+% 2009 version by Kiri Wagstaff and Sam Roweis's 2008 version, which is
+% slightly modified from Prasad Tadepalli's 2007 version which is a
+% lightly changed version of the previous year's version by Andrew
+% Moore, which was in turn edited from those of Kristian Kersting and
+% Codrina Lauth. Alex Smola contributed to the algorithmic style files.
