@@ -14,6 +14,7 @@
 % \usepackage{icml2023} with \usepackage[nohyperref]{icml2023} above.
 \usepackage{hyperref}
 
+\newcommand{\method}{SOAP}
 
 % Attempt to make hyperref and algorithmic work together better:
 \newcommand{\theHalgorithm}{\arabic{algorithm}}
@@ -58,13 +59,12 @@
 
 % The \icmltitle you define below is probably too long as a header.
 % Therefore, a short form for the running title is supplied here:
-\icmltitlerunning{Submission and Formatting Instructions for ICML 2023}
+\icmltitlerunning{Symbolic Optimization and Parsing}
 
 \begin{document}
 
 \twocolumn[
-\icmltitle{Submission and Formatting Instructions for \\
-           International Conference on Machine Learning (ICML 2023)}
+\icmltitle{Inferring and executing complex intents through dialogue}
 
 % It is OKAY to include author information, even for blind
 % submissions: the style file will automatically remove it for you
@@ -113,7 +113,7 @@
 %\printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
 
 \begin{abstract}
-Collaborative dialogue agents must balance communicative efficiency with task process for effective collaboration.
+Collaborative dialogue agents must balance communicative efficiency with task progress for effective collaboration.
 We design a system that strategically asks questions while minimizing communication costs via symbolic planning.
 Our system consists of a reader, planner, and writer:
 The reader maps language to logical forms
@@ -125,35 +125,42 @@ Results on DialOp, negotiation in Deal-or-no-Deal.
 \end{abstract}
 
 \section{Introduction}
+Humans and robots often have complementary strengths.
+For one, humans interact with the world in ways robots do not, resulting in unique problems that only humans encounter.
+On the other hand, robots can easily perform complex computations that are difficult for humans.
 
 Our goal is to design robots that collaborate with humans to solve complex problems.
 Humans often know the problem specification, but may have difficulty solving the problem itself.
-Describing the problem in its entirety is expensive, requiring humans many words to convey.
-The marginal improvement from full information may not be worth the communicative cost.
+Describing the problem in its entirety is expensive, requiring a lot of human effort to convey.
+Importantly, the marginal improvement from full information may not be worth the communicative cost.
 
-Minimizing communication costs is of utmost importance.
-Human processing costs are 
-Titeratively requesting information, updating our beliefs, and repeating until a satisfactory solution is reached.
-One approach is Bayesian optimization, which learns to maximize an unknown objective function,
+Minimizing communication cost is of utmost importance.
+Humans are prone to not engaging if communication costs are high.
+Example of describing problem setups: static vs online.
+In the worst case, humans would rather produce a very poor solution than spend effort fully describing a problem.
+
+Challenges of information sharing:
+How to efficiently elicit information.
+Hard because it requires reasoning about what information you have, determining what information remains, and predicting its effect on the objective.
+
+We perform model-based planning by maintaining a belief distribution over the underlying optimization problem and planning with a one-step lookahead heuristic.
+Proposing a query language through which agents can request and receive information about the unknown optimization problem.
+The query language is designed to be described concisely in natural language.
+
+We propose Symbolic Optimization and Parsing (\method{}), a method that collaborates with humans by requests information incrementally, decreasing human communication costs.
+\method{} parses natural language responses to logical forms, which are used to inform a symbolic optimization algorithm that plans what to say next.
+
+We evaluate \method{} on a set of 3 dialogue tasks: the most difficult task in DialOp \citep{lin2023decision}, negotiation, and X.
+
+\section{Related work}
+
+One approach to online optimization is Bayesian optimization, which learns to maximize an unknown objective function,
 e.g. $f(x) = \innerprod c x$, in as few evaluations of $f$ as possible.
 A key assumption in Bayesian optimization is that $f$ is a black box with unknown structure.
 Grey-box Bayesian optimization methods relax this assumption, improving sample complexity by taking advantage of structure in the optimization problem \citep{grey-box-bayesopt}.
 
 Two examples of this are when the objective consists of composite functions \citep{astudillo2019bayesian} and multi-fidelity Bayesian optimization \citep{poloczek2016multiinformation,Zanjani_Foumani_2023}. 
 Preferential Bayesian optimization \citep{astudillo2023qeubo}. (move to related work)
-
-We extend grey-box Bayesian optimization by considering a new setting:
-Agents can gather information about problem substructure directly, without assuming compositional structure.
-
-We then extend grey-box Bayesian optimization to the dialogue setting by proposing a query language through which agents can request and receive information about the unknown optimization problem.
-The query language is designed to be described concisely in natural language.
-
-We propose a method, Language to Symbolic Optimization (LSO) that collaborates with humans by requests information incrementally, decreasing human communication costs.
-LSO parses natural language responses to logical forms, which are used to inform a symbolic optimization algorithm that plans what to say next.
-
-We evaluate LSO on DialOp, a set of 3 decision-oriented dialogue tasks \citep{lin2023decision}.
-
-\section{Related work}
 
 \section{Decision-oriented dialogue}
 The goal of decision-oriented dialogue (DOD) is to solve an optimization problem, such as
@@ -234,7 +241,7 @@ lit: http://proceedings.mlr.press/v124/lee20a/lee20a.pdf
 
 % Acknowledgements should only appear in the accepted version.
 \section*{Acknowledgements}
-People
+David Bick, Saujas Vaduguru, Xinran Zhu
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
